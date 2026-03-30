@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云上泰和 · 青岛泰和嘉柏能源有限公司</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Ticker -->
+<div class="ticker-wrap" id="tickerWrap">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- Navigation -->
+<nav>
+  <div class="brand">🏢 云上泰和 <span class="sub">AI OS</span></div>
+  <a href="index.html" class="active">公司首页</a>
+  <a href="trading.html">期货点价作战室</a>
+  <a href="agents.html">Agent矩阵</a>
+  <a href="flow.html">协作流程</a>
+  <div class="spacer"></div>
+  <div class="live-indicator">
+    <div class="live-dot"></div>
+    <span>实时数据</span>
+  </div>
+  <span class="time" id="clock">-</span>
+</nav>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div style="margin-bottom:28px;">
+    <h1 style="font-size:26px;font-weight:900;margin-bottom:4px;">青岛泰和嘉柏能源有限公司</h1>
+    <p style="color:var(--text2);font-size:13px;">青岛泰和嘉柏能源 · 数字炼厂AI运营平台 · V1.0 &nbsp;|&nbsp; 新加坡阳光石油 × 山东京博石化</p>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="grid-5 mb-16">
+    <div class="kpi-card">
+      <div class="icon">💰</div>
+      <div class="value" style="color:var(--accent);" id="kpi-revenue">134亿</div>
+      <div class="label">年营收</div>
+      <div class="sub">2024年</div>
+    </div>
+    <div class="kpi-card">
+      <div class="icon">📦</div>
+      <div class="value" style="color:var(--accent3);" id="kpi-volume">68万吨</div>
+      <div class="label">年贸易量</div>
+      <div class="sub">原油 + 成品</div>
+    </div>
+    <div class="kpi-card">
+      <div class="icon">🛢️</div>
+      <div class="value" style="color:#f59e0b;" id="kpi-crude">78.4</div>
+      <div class="label">WTI原油</div>
+      <div class="sub change down" id="kpi-crude-chg">↓ 0.82</div>
+    </div>
+    <div class="kpi-card">
+      <div class="icon">⛵</div>
+      <div class="value" style="color:#00c896;" id="kpi-brent">82.1</div>
+      <div class="label">布伦特</div>
+      <div class="sub change up" id="kpi-brent-chg">↑ 0.35</div>
+    </div>
+    <div class="kpi-card">
+      <div class="icon">📊</div>
+      <div class="value" style="color:var(--danger);" id="kpi-var">¥2.3亿</div>
+      <div class="label">日VaR</div>
+      <div class="sub">99%置信度</div>
+    </div>
+  </div>
+
+  <!-- Department Status -->
+  <div class="panel mb-16">
+    <div class="panel-header">
+      <div class="panel-title">部门运行状态</div>
+      <span class="panel-badge">7个业务部门</span>
+    </div>
+    <div class="dept-status" id="deptStatus">
+      <div class="dept-chip">
+        <div class="dept-icon">📈</div>
+        <div><div class="dept-name">交易部</div><div class="dept-agent">期限结合Agent</div></div>
+        <div class="dept-status-dot busy"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">🛒</div>
+        <div><div class="dept-name">采购部</div><div class="dept-agent">采购策略Agent</div></div>
+        <div class="dept-status-dot idle"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">🏷️</div>
+        <div><div class="dept-name">销售部</div><div class="dept-agent">报价策略Agent</div></div>
+        <div class="dept-status-dot idle"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">⚙️</div>
+        <div><div class="dept-name">加工部</div><div class="dept-agent">炼化调度Agent</div></div>
+        <div class="dept-status-dot idle"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">🛡️</div>
+        <div><div class="dept-name">风控部</div><div class="dept-agent">VaR监控Agent</div></div>
+        <div class="dept-status-dot busy"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">🔬</div>
+        <div><div class="dept-name">研究部</div><div class="dept-agent">行情分析Agent</div></div>
+        <div class="dept-status-dot idle"></div>
+      </div>
+      <div class="dept-chip">
+        <div class="dept-icon">💳</div>
+        <div><div class="dept-name">财务部</div><div class="dept-agent">资金管理Agent</div></div>
+        <div class="dept-status-dot idle"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid-2 mb-16">
+
+    <!-- Market Overview -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">实时行情</div>
+        <span class="panel-badge info">LIVE</span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>品种</th><th>最新价</th><th>涨跌</th><th>升贴水</th><th>趋势</th></tr></thead>
+        <tbody id="marketTable">
+          <tr><td><span class="tag tag-blue">WTI原油</span></td><td id="m-wti">78.42</td><td class="down" id="m-wti-chg">-0.82</td><td>-</td><td><span class="tag tag-red">下跌</span></td></tr>
+          <tr><td><span class="tag tag-cyan">布伦特</span></td><td id="m-brent">82.15</td><td class="up" id="m-brent-chg">+0.35</td><td>+3.73</td><td><span class="tag tag-green">上涨</span></td></tr>
+          <tr><td><span class="tag tag-yellow">柴油(国内)</span></td><td>7450</td><td class="up">+120</td><td>-</td><td><span class="tag tag-green">上涨</span></td></tr>
+          <tr><td><span class="tag tag-purple">汽油(国内)</span></td><td>8850</td><td class="down">-65</td><td>-</td><td><span class="tag tag-red">下跌</span></td></tr>
+          <tr><td><span class="tag tag-green">燃料油</span></td><td>4280</td><td class="up">+45</td><td>-</td><td><span class="tag tag-green">上涨</span></td></tr>
+          <tr><td><span class="tag tag-blue">沥青</span></td><td>3680</td><td class="down">-30</td><td>-</td><td><span class="tag tag-red">下跌</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Position Overview -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">敞口概览</div>
+        <span class="panel-badge warn">风险监控</span>
+      </div>
+      <div class="grid-2" style="gap:12px;">
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">买入敞口</div>
+          <div class="value" style="color:#00c896;font-size:20px;">32万吨</div>
+          <div class="sub">多头未套保</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:64%;background:#00c896;"></div></div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">卖出敞口</div>
+          <div class="value" style="color:#f59e0b;font-size:20px;">18万吨</div>
+          <div class="sub">空头未套保</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:36%;background:#f59e0b;"></div></div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">套保比率</div>
+          <div class="value" style="color:var(--accent3);font-size:20px;">78%</div>
+          <div class="sub">覆盖率</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:78%;background:var(--accent3);"></div></div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">对冲敞口</div>
+          <div class="value" style="color:var(--danger);font-size:20px;">¥4.8亿</div>
+          <div class="sub">名义本金</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:55%;background:var(--danger);"></div></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:12px;color:var(--text2);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span>总敞口</span><span style="color:var(--text);font-weight:600;">50万吨</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span>已套保</span><span style="color:var(--success);font-weight:600;">39万吨</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>净敞口</span><span style="color:var(--warn);font-weight:600;">11万吨</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk & Trading -->
+  <div class="grid-2 mb-16">
+
+    <!-- Risk Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">风险指标</div>
+        <span class="panel-badge danger">实时监控</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">日VaR (99%)</div>
+          <div class="value" style="color:var(--danger);font-size:18px;">¥2,340万</div>
+          <div class="change down">↑ 较昨日</div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">月VaR (95%)</div>
+          <div class="value" style="color:var(--warn);font-size:18px;">¥1,820万</div>
+          <div class="change up">↓ 风险下降</div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">名义杠杆</div>
+          <div class="value" style="color:var(--accent3);font-size:18px;">3.2x</div>
+          <div class="sub">允许 ≤5x</div>
+        </div>
+        <div class="kpi-card" style="padding:12px;">
+          <div class="label">预警状态</div>
+          <div class="value" style="color:var(--success);font-size:18px;">正常</div>
+          <div class="sub">无预警</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:12px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span class="status-dot idle"></span>
+          <span style="color:var(--text2);">VaR限额: ¥3,000万</span>
+          <div style="margin-left:auto;background:var(--surface2);border-radius:4px;height:6px;width:80px;overflow:hidden;"><div style="width:78%;height:100%;background:var(--success);border-radius:4px;"></div></div>
+          <span style="color:var(--success);">78%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span class="status-dot idle"></span>
+          <span style="color:var(--text2);">敞口限额: 60万吨</span>
+          <div style="margin-left:auto;background:var(--surface2);border-radius:4px;height:6px;width:80px;overflow:hidden;"><div style="width:83%;height:100%;background:var(--warn);border-radius:4px;"></div></div>
+          <span style="color:var(--warn);">83%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="status-dot idle"></span>
+          <span style="color:var(--text2);">对冲率下限: 70%</span>
+          <div style="margin-left:auto;background:var(--surface2);border-radius:4px;height:6px;width:80px;overflow:hidden;"><div style="width:78%;height:100%;background:var(--accent3);border-radius:4px;"></div></div>
+          <span style="color:var(--accent3);">78%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Hedges -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">近期点价记录</div>
+        <a href="trading.html" style="font-size:12px;color:var(--accent);">查看全部 →</a>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>时间</th><th>品种</th><th>点价</th><th>数量</th><th>状态</th></tr></thead>
+        <tbody id="hedgeTable">
+          <tr><td>03-28 09:15</td><td>WTI 05</td><td class="up">78.50</td><td>2万吨</td><td><span class="tag tag-green">已完成</span></td></tr>
+          <tr><td>03-27 14:32</td><td>布伦特 05</td><td class="down">81.80</td><td>3万吨</td><td><span class="tag tag-green">已完成</span></td></tr>
+          <tr><td>03-27 10:05</td><td>WTI 06</td><td>79.20</td><td>1万吨</td><td><span class="tag tag-yellow">进行中</span></td></tr>
+          <tr><td>03-26 13:44</td><td>布伦特 04</td><td class="up">80.50</td><td>4万吨</td><td><span class="tag tag-green">已完成</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Agent Matrix Summary -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Agent矩阵</div>
+      <a href="agents.html" style="font-size:12px;color:var(--accent);">查看全部 →</a>
+    </div>
+    <div class="grid-4">
+      <div class="agent-card trading active" style="cursor:default;">
+        <div class="agent-header">
+          <div class="agent-icon">📈</div>
+          <div><div class="agent-name">交易Agent</div><div class="agent-role">期限结合 · 点价</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot busy"></span><span class="status-text">执行中</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">期货点价</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">敞口管理</span></div>
+        <div class="agent-log"><div class="line">→ 接收协调Agent任务</div><div class="line">→ 分析WTI 78.4支撑位</div><div class="line">→ 建议点价区间[77.5,79.0]</div></div>
+      </div>
+      <div class="agent-card capital">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:rgba(245,158,11,0.2);">💳</div>
+          <div><div class="agent-name">资金面Agent</div><div class="agent-role">成本核算 · 资金流</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot idle"></span><span class="status-text">待命</span></div>
+        <div class="skill"><div class="skill-dot"></div><span class="skill-name">资金成本</span></div>
+        <div class="skill"><div class="skill-dot"></div><span class="skill-name">保证金计算</span></div>
+        <div class="skill"><div class="skill-dot"></div><span class="skill-name">汇率对冲</span></div>
+      </div>
+      <div class="agent-card risk">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:rgba(239,68,68,0.2);">🛡️</div>
+          <div><div class="agent-name">风险Agent</div><div class="agent-role">VaR · 对冲建议</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot busy"></span><span class="status-text">监控中</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">VaR计算</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">对冲方案</span></div>
+        <div class="agent-log"><div class="line">→ 当前日VaR ¥2,340万</div><div class="line">→ 建议增加5%对冲</div><div class="line">→ 杠杆率3.2x 正常</div></div>
+      </div>
+      <div class="agent-card master" style="border-color:var(--accent);">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:rgba(0,200,150,0.2);">🎯</div>
+          <div><div class="agent-name">协调Agent</div><div class="agent-role">总控 · 任务调度</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot busy"></span><span class="status-text">协调中</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">任务分发</span></div>
+        <div class="skill active"><div class="skill-dot"></div><span class="skill-name">结果汇总</span></div>
+        <div class="agent-log"><div class="line">→ 已调度4个专业Agent</div><div class="line">→ 等待交易/风险回报</div><div class="line">→ 预计30秒内输出</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Clock
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+}
+setInterval(updateClock,1000); updateClock();
+
+// Ticker Data
+const tickers=[
+  {sym:'WTI原油05',price:78.42,chg:-0.82},
+  {sym:'布伦特06',price:82.15,chg:0.35},
+  {sym:'柴油主力',price:7450,chg:120},
+  {sym:'汽油主力',price:8850,chg:-65},
+  {sym:'燃料油',price:4280,chg:45},
+  {sym:'沥青主力',price:3680,chg:-30},
+  {sym:'沪铜主力',price:72800,chg:320},
+  {sym:'美元/人民币',price:7.2480,chg:-0.0032},
+];
+function renderTicker(){
+  const inner=document.getElementById('ticker');
+  const items=tickers.map(t=>{
+    const cls=t.chg>=0?'up':'down';
+    const sign=t.chg>=0?'+':'';
+    return `<div class="ticker-item"><span class="sym">${t.sym}</span><span class="price ${cls}">${typeof t.price==='number'&&t.price<100?t.price.toFixed(2):t.price.toLocaleString()}</span><span class="${cls}">${sign}${typeof t.chg==='number'&&Math.abs(t.chg)<100?t.chg.toFixed(2):t.chg}</span></div><span class="ticker-sep">|</span>`;
+  }).join('');
+  inner.innerHTML=items+items;
+}
+renderTicker();
+
+// Simulate market updates
+function updatePrices(){
+  tickers.forEach(t=>{
+    const delta=(Math.random()-0.5)*0.3;
+    t.price=Math.round((t.price+delta)*100)/100;
+    t.chg=Math.round((t.chg+(Math.random()-0.5)*0.1)*100)/100;
+  });
+  // Update DOM
+  document.querySelector('#marketTable tr:nth-child(1) td:nth-child(2)').textContent=document.querySelector('#marketTable tr:nth-child(1) td:nth-child(2)').textContent;
+  renderTicker();
+}
+setInterval(updatePrices,8000);
+</script>
+</body>
+</html>

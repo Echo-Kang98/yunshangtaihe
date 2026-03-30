@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期货点价作战室 · 云上泰和</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="brand">🏢 云上泰和 <span class="sub">AI OS</span></div>
+  <a href="index.html">公司首页</a>
+  <a href="trading.html" class="active">期货点价作战室</a>
+  <a href="agents.html">Agent矩阵</a>
+  <a href="flow.html">协作流程</a>
+  <div class="spacer"></div>
+  <div class="live-indicator"><div class="live-dot"></div><span>实时数据</span></div>
+  <span class="time" id="clock">-</span>
+</nav>
+
+<div class="container-narrow">
+
+  <div class="controls">
+    <button class="btn btn-primary" id="btnAnalyze" onclick="startAnalysis()">🚀 开始点价分析</button>
+    <button class="btn btn-danger" id="btnStop" onclick="stopAnalysis()" disabled>⏹ 停止</button>
+    <button class="btn btn-outline" onclick="resetAnalysis()">↺ 重置</button>
+    <div style="margin-left:auto;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:16px;">
+      <span>场景：期货点价建议</span>
+      <span id="analysisStatus" style="color:var(--text3);">等待启动</span>
+    </div>
+  </div>
+
+  <div class="signal-card wait" id="signalCard">
+    <div class="signal-label">点价决策信号</div>
+    <div class="signal-action" id="signalAction">等待分析</div>
+    <div class="signal-detail" id="signalDetail">点击「开始点价分析」启动多Agent协作</div>
+  </div>
+
+  <div class="grid-4 mb-16">
+    <div class="kpi-card"><div class="icon">🎯</div><div class="value" style="color:#00c896;" id="kpi-target">-</div><div class="label">推荐点价</div><div class="sub">美元/桶</div></div>
+    <div class="kpi-card"><div class="icon">📊</div><div class="value" style="color:#f59e0b;" id="kpi-spread">-</div><div class="label">升贴水报价</div><div class="sub">美元/桶</div></div>
+    <div class="kpi-card"><div class="icon">⏰</div><div class="value" style="color:var(--accent3);" id="kpi-timing">-</div><div class="label">最佳窗口</div><div class="sub">GMT+8</div></div>
+    <div class="kpi-card"><div class="icon">💰</div><div class="value" style="color:var(--danger);" id="kpi-cost">-</div><div class="label">对冲成本</div><div class="sub">年化%</div></div>
+  </div>
+
+  <div class="panel mb-16">
+    <div class="panel-header">
+      <div class="panel-title">当前行情</div>
+      <span class="panel-badge info">实时</span>
+    </div>
+    <div class="grid-3" style="gap:16px;">
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">WTI原油 05</div>
+        <div class="price-big" id="price-wti">78.42</div>
+        <div class="change down mt-8" id="chg-wti">↓ 0.82 (-1.04%)</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">布伦特 05</div>
+        <div class="price-big" id="price-brent">82.15</div>
+        <div class="change up mt-8" id="chg-brent">↑ 0.35 (+0.43%)</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">迪拜原油 05</div>
+        <div class="price-big" style="font-size:28px;" id="price-dubai">80.30</div>
+        <div class="change up mt-8" id="chg-dubai">↑ 0.18 (+0.22%)</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <table class="data-table">
+      <thead><tr><th>合约</th><th>最新价</th><th>昨收</th><th>升贴水</th><th>波动率</th><th>流动性</th></tr></thead>
+      <tbody>
+        <tr><td>WTI 05</td><td class="up">78.42</td><td>79.24</td><td>基准</td><td class="up">18.5%</td><td><span class="tag tag-green">高</span></td></tr>
+        <tr><td>布伦特 05</td><td class="up">82.15</td><td>81.80</td><td class="up">+3.73</td><td class="up">17.2%</td><td><span class="tag tag-green">高</span></td></tr>
+        <tr><td>迪拜 05</td><td class="up">80.30</td><td>80.12</td><td class="up">+1.88</td><td>16.8%</td><td><span class="tag tag-yellow">中</span></td></tr>
+        <tr><td>WTI 06</td><td>78.80</td><td>78.90</td><td>基准</td><td>17.9%</td><td><span class="tag tag-green">高</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2 mb-16">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">敞口分析</div><span class="panel-badge warn">风险敞口</span></div>
+      <div class="kpi-card" style="padding:14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:12px;color:var(--text2);">买入敞口（多头）</div><div class="value" style="color:#00c896;font-size:20px;margin-top:4px;">32万吨</div></div>
+          <div style="text-align:right;"><div class="tag tag-green">可接受</div><div style="font-size:11px;color:var(--text2);margin-top:4px;">敞口率 64%</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:64%;"></div></div>
+      </div>
+      <div class="kpi-card" style="padding:14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:12px;color:var(--text2);">卖出敞口（空头）</div><div class="value" style="color:#f59e0b;font-size:20px;margin-top:4px;">18万吨</div></div>
+          <div style="text-align:right;"><div class="tag tag-yellow">注意</div><div style="font-size:11px;color:var(--text2);margin-top:4px;">敞口率 36%</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:36%;background:#f59e0b;"></div></div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;font-size:12px;">
+        <div style="margin-bottom:6px;"><span style="color:var(--text2);">净敞口：</span><strong style="color:var(--warn);">14万吨（净多）</strong></div>
+        <div style="margin-bottom:6px;"><span style="color:var(--text2);">套保需求：</span><strong style="color:var(--accent);">建议对冲 8万吨</strong></div>
+        <div><span style="color:var(--text2);">对冲工具：</span><span class="tag tag-blue" style="font-size:10px;">WTI期货空头</span> <span class="tag tag-cyan" style="font-size:10px;">布伦特期货空头</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">点价建议</div><span class="panel-badge success" id="suggestionBadge">等待</span></div>
+      <div id="suggestionContent"><div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">点击「开始点价分析」获取建议</div></div>
+    </div>
+  </div>
+
+  <div class="panel mb-16">
+    <div class="panel-header"><div class="panel-title">对冲方案</div><span class="panel-badge danger">风控建议</span></div>
+    <div id="hedgePlan"><div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析后显示对冲方案</div></div>
+  </div>
+
+  <div class="panel mb-16">
+    <div class="panel-header"><div class="panel-title">多Agent协作</div><span class="panel-badge" id="agentBadge">等待</span></div>
+    <div class="grid-4" style="gap:12px;">
+      <div class="agent-card master" id="agent-master" style="padding:14px;">
+        <div class="agent-header" style="margin-bottom:6px;">
+          <div class="agent-icon" style="background:rgba(0,200,150,0.2);width:32px;height:32px;font-size:16px;">🎯</div>
+          <div><div class="agent-name" style="font-size:13px;">协调Agent</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot idle" id="dot-master"></span><span class="status-text" id="txt-master">待命</span></div>
+        <div class="agent-log" style="max-height:50px;"><div class="line" id="log-master">-</div></div>
+      </div>
+      <div class="agent-card trading" id="agent-trading" style="padding:14px;">
+        <div class="agent-header" style="margin-bottom:6px;">
+          <div class="agent-icon" style="width:32px;height:32px;font-size:16px;">📈</div>
+          <div><div class="agent-name" style="font-size:13px;">期限结合Agent</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot idle" id="dot-trading"></span><span class="status-text" id="txt-trading">待命</span></div>
+        <div class="agent-log" style="max-height:50px;"><div class="line" id="log-trading">-</div></div>
+      </div>
+      <div class="agent-card capital" id="agent-capital" style="padding:14px;">
+        <div class="agent-header" style="margin-bottom:6px;">
+          <div class="agent-icon" style="background:rgba(245,158,11,0.2);width:32px;height:32px;font-size:16px;">💳</div>
+          <div><div class="agent-name" style="font-size:13px;">资金面Agent</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot idle" id="dot-capital"></span><span class="status-text" id="txt-capital">待命</span></div>
+        <div class="agent-log" style="max-height:50px;"><div class="line" id="log-capital">-</div></div>
+      </div>
+      <div class="agent-card risk" id="agent-risk" style="padding:14px;">
+        <div class="agent-header" style="margin-bottom:6px;">
+          <div class="agent-icon" style="background:rgba(239,68,68,0.2);width:32px;height:32px;font-size:16px;">🛡️</div>
+          <div><div class="agent-name" style="font-size:13px;">风险Agent</div></div>
+        </div>
+        <div class="agent-status-row"><span class="status-dot idle" id="dot-risk"></span><span class="status-text" id="txt-risk">待命</span></div>
+        <div class="agent-log" style="max-height:50px;"><div class="line" id="log-risk">-</div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="msg-flow" id="msgFlow">
+      <div class="msg-row" style="color:var(--text3);font-size:11px;">启动分析后消息将在这里显示...</div>
+    </div>
+  </div>
+
+  <div class="panel mb-16">
+    <div class="panel-header"><div class="panel-title">执行日志</div></div>
+    <div class="exec-log" id="execLog">
+      <div class="exec-entry info"><span class="exec-time">--:--:--</span><span class="exec-agent">系统</span><span class="exec-msg">等待启动点价分析...</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">历史点价记录</div></div>
+    <table class="data-table">
+      <thead><tr><th>时间</th><th>合约</th><th>点价</th><th>数量</th><th>方向</th><th>Agent</th><th>盈亏</th></tr></thead>
+      <tbody>
+        <tr><td>03-28 09:15</td><td>WTI 05</td><td class="up">78.50</td><td>2万吨</td><td><span class="tag tag-blue">买入点价</span></td><td>期限结合Agent</td><td class="up">+¥12万</td></tr>
+        <tr><td>03-27 14:32</td><td>布伦特 05</td><td class="down">81.80</td><td>3万吨</td><td><span class="tag tag-blue">买入点价</span></td><td>期限结合Agent</td><td class="down">-¥8万</td></tr>
+        <tr><td>03-27 10:05</td><td>WTI 06</td><td>79.20</td><td>1万吨</td><td><span class="tag tag-yellow">对冲卖出</span></td><td>风险Agent</td><td class="up">+¥3万</td></tr>
+        <tr><td>03-26 13:44</td><td>布伦特 04</td><td class="up">80.50</td><td>4万吨</td><td><span class="tag tag-blue">买入点价</span></td><td>期限结合Agent</td><td class="up">+¥28万</td></tr>
+        <tr><td>03-25 11:20</td><td>WTI 04</td><td class="down">77.30</td><td>2万吨</td><td><span class="tag tag-blue">买入点价</span></td><td>期限结合Agent</td><td class="up">+¥38万</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function tick(){
+    var now=new Date();
+    document.getElementById('clock').textContent=now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+  setInterval(tick,1000); tick();
+})();
+
+var analyzing=false;
+var stepTimer=null;
+
+function setAgent(id,state,txt,log){
+  var dot=document.getElementById('dot-'+id);
+  var txtEl=document.getElementById('txt-'+id);
+  var logEl=document.getElementById('log-'+id);
+  var card=document.getElementById('agent-'+id);
+  if(dot) dot.className='status-dot '+(state==='busy'?'busy':'idle');
+  if(txtEl) txtEl.textContent=txt;
+  if(logEl) logEl.textContent=log||'-';
+  if(card){
+    var cls='agent-card '+id;
+    if(state==='busy') cls+=' busy';
+    else if(state==='done') cls+=' active';
+    card.className=cls;
+  }
+}
+
+function resetAgents(){
+  ['master','trading','capital','risk'].forEach(function(a){ setAgent(a,'idle','待命','-'); });
+}
+
+function addMsg(agent,text,cls){
+  var flow=document.getElementById('msgFlow');
+  var now=new Date();
+  var time=now.toTimeString().slice(0,8);
+  var row=document.createElement('div');
+  row.className='msg-row';
+  row.innerHTML='<span class="msg-time">'+time+'</span><span class="msg-agent '+cls+'">'+agent+'</span><span class="msg-arrow">→</span><span class="msg-text">'+text+'</span>';
+  flow.appendChild(row);
+  flow.scrollTop=flow.scrollHeight;
+}
+
+function addExec(agent,msg,type){
+  var log=document.getElementById('execLog');
+  var now=new Date();
+  var time=now.toTimeString().slice(0,8);
+  var entry=document.createElement('div');
+  entry.className='exec-entry '+type;
+  entry.innerHTML='<span class="exec-time">'+time+'</span><span class="exec-agent">'+agent+'</span><span class="exec-msg">'+msg+'</span>';
+  log.appendChild(entry);
+  log.scrollTop=log.scrollHeight;
+}
+
+function setSignal(type,action,detail){
+  var card=document.getElementById('signalCard');
+  if(card) card.className='signal-card '+(type==='buy'?'buy':type==='sell'?'sell':type==='hold'?'hold':'wait');
+  var actionEl=document.getElementById('signalAction');
+  var detailEl=document.getElementById('signalDetail');
+  if(actionEl) actionEl.textContent=action;
+  if(detailEl) detailEl.textContent=detail;
+}
+
+var suggestionHTMLs=[
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">点击「开始点价分析」获取建议</div>',
+  '<div style="padding:12px;background:var(--surface2);border-radius:8px;"><div style="color:var(--text2);font-size:11px;">分析启动中...</div></div>',
+  '<div style="padding:12px;background:var(--surface2);border-radius:8px;"><div style="color:var(--text2);font-size:11px;">期限结合Agent分析期货曲线...</div></div>',
+  '<div style="padding:12px;background:var(--surface2);border-radius:8px;"><div style="color:var(--text2);font-size:11px;">资金面Agent核算成本...</div></div>',
+  '<div style="padding:12px;background:var(--surface2);border-radius:8px;"><div style="color:var(--text2);font-size:11px;">风险Agent评估VaR...</div></div>',
+  '<div style="padding:12px;background:rgba(0,200,150,0.08);border-radius:8px;border:1px solid rgba(0,200,150,0.3);margin-bottom:10px;"><div style="color:var(--accent);font-size:11px;margin-bottom:6px;">📊 期限结合Agent</div><div class="price-med" style="color:#00c896;">$77.8 ~ $79.0</div><div style="font-size:11px;color:var(--text2);margin-top:6px;">当前WTI 78.4，建议等待回落至$78下方介入</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag tag-blue">支撑: $77.5</span><span class="tag tag-yellow">阻力: $80.0</span><span class="tag tag-red">止损: $76.5</span></div>',
+  '<div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:8px;border:1px solid rgba(245,158,11,0.3);margin-bottom:10px;"><div style="color:#f59e0b;font-size:11px;margin-bottom:6px;">💳 资金面Agent</div><div class="price-med" style="color:#f59e0b;">2.3% 年化</div><div style="font-size:11px;color:var(--text2);margin-top:6px;">保证金需求: ¥3,200万 | 汇率风险可控</div></div><div style="display:flex;gap:8px;"><span class="tag tag-yellow">美元敞口: $2,400万</span><span class="tag tag-blue">汇率: 7.248</span></div>',
+  '<div style="padding:12px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.3);margin-bottom:10px;"><div style="color:var(--danger);font-size:11px;margin-bottom:6px;">🛡️ 风险Agent</div><div class="price-med" style="color:var(--danger);">建议对冲 8万吨</div><div style="font-size:11px;color:var(--text2);margin-top:6px;">日VaR ¥2,340万 | 对冲后可降至 ¥1,980万</div></div><div style="display:flex;gap:8px;"><span class="tag tag-red">WTI空头 5万吨</span><span class="tag tag-purple">布伦特空头 3万吨</span></div>',
+  '<div style="padding:16px;background:rgba(0,200,150,0.1);border-radius:12px;border:2px solid var(--accent);"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:18px;">🎯</span><span style="font-size:16px;font-weight:800;color:var(--accent);">综合决策建议</span></div><div style="font-size:13px;line-height:2;"><div><span style="color:var(--text2);">推荐点价区间：</span><strong style="color:#00c896;">$77.5 ~ $78.5</strong></div><div><span style="color:var(--text2);">最佳窗口：</span><strong style="color:var(--accent3);">14:00 - 15:30 (GMT+8)</strong></div><div><span style="color:var(--text2);">对冲方案：</span><strong>做空WTI 5万吨 + 做空布伦特 3万吨</strong></div><div><span style="color:var(--text2);">目标价位：</span><strong style="color:var(--success);">$80.0（上行目标）</strong></div><div><span style="color:var(--text2);">止损价位：</span><strong style="color:var(--danger);">$76.5</strong></div><div><span style="color:var(--text2);">对冲成本：</span><strong>2.3%年化 | ¥3,200万保证金</strong></div></div></div>',
+];
+
+var hedgeHTMLs=[
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析后显示对冲方案</div>',
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>',
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>',
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>',
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>',
+  '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>',
+  '<div style="padding:12px;background:var(--surface2);border-radius:8px;"><div style="color:var(--text2);font-size:12px;">期限对冲方案计算中...</div></div>',
+  '<div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:8px;"><div style="color:#f59e0b;font-size:12px;">💳 资金成本测算</div><div style="color:var(--text);font-size:13px;margin-top:4px;">保证金 ¥3,200万 | 手续费 ¥1.2万</div></div>',
+  '<div style="padding:12px;background:rgba(239,68,68,0.08);border-radius:8px;"><div style="color:var(--danger);font-size:12px;">🛡️ 风险对冲方案</div><div style="color:var(--text);font-size:13px;margin-top:4px;">WTI空头5万吨 + 布伦特空头3万吨</div></div>',
+  '<div class="grid-3" style="gap:12px;"><div style="padding:12px;background:var(--surface2);border-radius:8px;text-align:center;"><div style="font-size:11px;color:var(--text2);">做空WTI</div><div style="font-size:20px;font-weight:800;color:#00c896;">5万吨</div><div style="font-size:11px;color:var(--text2);">均价 $78.0</div></div><div style="padding:12px;background:var(--surface2);border-radius:8px;text-align:center;"><div style="font-size:11px;color:var(--text2);">做空布伦特</div><div style="font-size:20px;font-weight:800;color:#f59e0b;">3万吨</div><div style="font-size:11px;color:var(--text2);">均价 $81.8</div></div><div style="padding:12px;background:var(--surface2);border-radius:8px;text-align:center;"><div style="font-size:11px;color:var(--text2);">VaR降低</div><div style="font-size:20px;font-weight:800;color:var(--success);">-15%</div><div style="font-size:11px;color:var(--text2);">套保后</div></div></div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><span class="tag tag-red">对冲比率: 16%</span><span class="tag tag-yellow">剩余敞口: 42万吨</span><span class="tag tag-green">月对冲成本: ¥58万</span></div>',
+];
+
+var steps=[
+  {id:0, agent:'master', delay:500, badge:'启动中', kpi:{target:'-',spread:'-',timing:'-',cost:'-'}, signal:'', signalDetail:'协调Agent正在启动分析任务...', log:'→ 接收点价分析任务', exec:'任务启动: 期货点价建议场景', cls:'master'},
+  {id:1, agent:'trading', delay:1200, badge:'分析中', kpi:{target:'计算中',spread:'-',timing:'-',cost:'-'}, signal:'', signalDetail:'期限结合Agent正在分析期货价格结构...', log:'→ 分析WTI/布伦特价差结构', exec:'期限结合Agent: 分析期货曲线', cls:'trading'},
+  {id:2, agent:'capital', delay:2000, badge:'核算中', kpi:{target:'计算中',spread:'计算中',timing:'-',cost:'-'}, signal:'', signalDetail:'资金面Agent正在计算点价成本与保证金...', log:'→ 计算资金成本 ¥4.8亿敞口', exec:'资金面Agent: 核算保证金需求', cls:'capital'},
+  {id:3, agent:'risk', delay:2800, badge:'评估中', kpi:{target:'计算中',spread:'计算中',timing:'计算中',cost:'-'}, signal:'', signalDetail:'风险Agent正在计算VaR敞口...', log:'→ VaR ¥2,340万 分析中', exec:'风险Agent: 计算日VaR敞口', cls:'risk'},
+  {id:4, agent:'trading', delay:3500, badge:'完成', kpi:{target:'77.8~79.0',spread:'+3.73',timing:'14:00-15:30',cost:'-'}, signal:'hold', signalDetail:'推荐区间[77.5,79.0]，等待价格回落至78下方介入', log:'→ 推荐点价区间[77.8,79.0]', exec:'期限结合Agent: 点价区间[77.8,79.0]', cls:'trading'},
+  {id:5, agent:'capital', delay:4200, badge:'完成', kpi:{target:'77.8~79.0',spread:'+3.73',timing:'14:00-15:30',cost:'2.3%'}, signal:'hold', signalDetail:'点价成本2.3%年化，保证金需求¥3,200万', log:'→ 资金成本2.3%年化', exec:'资金面Agent: 成本2.3%年化', cls:'capital'},
+  {id:6, agent:'risk', delay:4900, badge:'完成', kpi:{target:'77.8~79.0',spread:'+3.73',timing:'14:00-15:30',cost:'2.3%'}, signal:'hold', signalDetail:'建议增加5%对冲，当前敞口风险可控', log:'→ 建议对冲8万吨WTI空头', exec:'风险Agent: 建议对冲8万吨', cls:'risk'},
+  {id:7, agent:'master', delay:5600, badge:'完成', kpi:{target:'77.5~78.5',spread:'+3.73',timing:'14:00-15:30',cost:'2.3%'}, signal:'buy', signalDetail:'综合建议：等待WTI回落至78.0下方买入，区间[77.5,78.5]，目标80.0，止损76.5', log:'→ 协调完成，输出最终建议', exec:'协调Agent: 汇总4个Agent结果', cls:'master'},
+];
+
+var agentNames={master:'协调Agent',trading:'期限结合Agent',capital:'资金面Agent',risk:'风险Agent'};
+var currentStep=0;
+
+function runNextStep(){
+  if(currentStep>=steps.length){ finishAnalysis(); return; }
+  var s=steps[currentStep];
+  document.getElementById('analysisStatus').textContent='Step '+(currentStep+1)+'/'+steps.length;
+  setAgent(s.agent,'busy',s.badge,s.log);
+  if(s.signal) setSignal(s.signal,s.signal==='buy'?'买入建议':s.signal==='sell'?'卖出建议':'观望',s.signalDetail);
+  if(s.kpi.target) document.getElementById('kpi-target').textContent=s.kpi.target;
+  if(s.kpi.spread) document.getElementById('kpi-spread').textContent=s.kpi.spread;
+  if(s.kpi.timing) document.getElementById('kpi-timing').textContent=s.kpi.timing;
+  if(s.kpi.cost) document.getElementById('kpi-cost').textContent=s.kpi.cost;
+  if(s.agent==='trading') document.getElementById('suggestionContent').innerHTML=suggestionHTMLs[s.id]||'';
+  if(s.agent==='risk') document.getElementById('hedgePlan').innerHTML=hedgeHTMLs[s.id]||'';
+  if(s.id>=4) document.getElementById('suggestionBadge').textContent='完成';
+  addMsg(agentNames[s.agent], s.log, s.cls);
+  addExec(agentNames[s.agent], s.exec, s.id>=4?'success':'info');
+  setTimeout(function(){
+    setAgent(s.agent,'done','完成');
+    currentStep++;
+    runNextStep();
+  }, s.delay);
+}
+
+function finishAnalysis(){
+  document.getElementById('analysisStatus').textContent='分析完成';
+  document.getElementById('agentBadge').textContent='完成';
+  document.getElementById('btnAnalyze').disabled=false;
+  document.getElementById('btnStop').disabled=true;
+  analyzing=false;
+}
+
+function startAnalysis(){
+  if(analyzing) return;
+  analyzing=true; currentStep=0;
+  document.getElementById('btnAnalyze').disabled=true;
+  document.getElementById('btnStop').disabled=false;
+  document.getElementById('agentBadge').textContent='运行中';
+  document.getElementById('suggestionBadge').textContent='分析中';
+  document.getElementById('msgFlow').innerHTML='';
+  document.getElementById('execLog').innerHTML='';
+  resetAgents();
+  document.getElementById('kpi-target').textContent='-';
+  document.getElementById('kpi-spread').textContent='-';
+  document.getElementById('kpi-timing').textContent='-';
+  document.getElementById('kpi-cost').textContent='-';
+  document.getElementById('signalCard').className='signal-card wait';
+  document.getElementById('signalAction').textContent='分析中...';
+  document.getElementById('signalDetail').textContent='协调Agent正在启动分析任务...';
+  document.getElementById('suggestionContent').innerHTML=suggestionHTMLs[1];
+  document.getElementById('hedgePlan').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">分析中...</div>';
+  runNextStep();
+}
+
+function stopAnalysis(){
+  if(!analyzing) return;
+  analyzing=false;
+  clearTimeout(stepTimer);
+  document.getElementById('analysisStatus').textContent='已停止';
+  document.getElementById('btnAnalyze').disabled=false;
+  document.getElementById('
+
+function stopAnalysis(){
+  if(!analyzing) return;
+  analyzing=false;
+  clearTimeout(stepTimer);
+  document.getElementById("analysisStatus").textContent="已停止";
+  document.getElementById("btnAnalyze").disabled=false;
+  document.getElementById("btnStop").disabled=true;
+  setAgent("master","idle","待命","-");
+  setAgent("trading","idle","待命","-");
+  setAgent("capital","idle","待命","-");
+  setAgent("risk","idle","待命","-");
+}
+function resetAnalysis(){
+  analyzing=false;
+  currentStep=0;
+  clearTimeout(stepTimer);
+  document.getElementById("btnAnalyze").disabled=false;
+  document.getElementById("btnStop").disabled=true;
+  document.getElementById("analysisStatus").textContent="等待启动";
+  document.getElementById("agentBadge").textContent="等待";
+  document.getElementById("suggestionBadge").textContent="等待";
+  document.getElementById("kpi-target").textContent="-";
+  document.getElementById("kpi-spread").textContent="-";
+  document.getElementById("kpi-timing").textContent="-";
+  document.getElementById("kpi-cost").textContent="-";
+  document.getElementById("signalCard").className="signal-card wait";
+  document.getElementById("signalAction").textContent="等待分析";
+  document.getElementById("signalDetail").textContent="点击「开始点价分析」启动多Agent协作";
+  document.getElementById("suggestionContent").innerHTML=suggestionHTMLs[0];
+  document.getElementById("hedgePlan").innerHTML=hedgeHTMLs[0];
+  document.getElementById("msgFlow").innerHTML="<div class='msg-row' style='color:var(--text3);font-size:11px;'>启动分析后消息将在这里显示...</div>";
+  document.getElementById("execLog").innerHTML="<div class='exec-entry info'><span class='exec-time'>--:--:--</span><span class='exec-agent'>系统</span><span class='exec-msg'>等待启动点价分析...</span></div>";
+  resetAgents();
+}
+</script>
+</body>
+</html>

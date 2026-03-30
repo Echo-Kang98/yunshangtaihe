@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>协作流程 · 云上泰和</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.flow-container{padding:20px 0;}
+.flow-section{margin-bottom:40px;}
+.flow-section-title{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.flow-section-title .num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.flow-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.flow-card{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;transition:all 0.3s;}
+.flow-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.flow-card.start{border-color:var(--accent);background:rgba(0,200,150,0.05);}
+.flow-card.end{border-color:var(--success);background:rgba(16,185,129,0.05);}
+.flow-card .card-icon{font-size:24px;margin-bottom:8px;}
+.flow-card .card-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.flow-card .card-sub{font-size:11px;color:var(--text2);}
+.flow-card .card-status{font-size:11px;margin-top:8px;}
+.flow-card .card-status.busy{color:var(--warn);}
+.flow-card .card-status.done{color:var(--success);}
+.flow-card .card-status.idle{color:var(--text3);}
+.arrow-cell{color:var(--text3);font-size:20px;flex-shrink:0;}
+.timeline{position:relative;padding-left:24px;}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border);}
+.timeline-item{position:relative;margin-bottom:20px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+.timeline-item::before{content:'';position:absolute;left:-21px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
+.timeline-item.done::before{background:var(--success);}
+.timeline-item.active::before{background:var(--warn);animation:pulse 1s infinite;}
+.timeline-item .time{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.timeline-item .title{font-size:13px;font-weight:700;}
+.timeline-item .desc{font-size:12px;color:var(--text2);margin-top:4px;}
+.msg-bubble{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.msg-bubble:last-child{border:none;}
+.msg-bubble .avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.msg-bubble .bubble-content{flex:1;}
+.msg-bubble .bubble-from{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px;}
+.msg-bubble .bubble-text{font-size:12px;color:var(--text2);}
+.h-demo{display:flex;flex-direction:column;gap:0;padding:12px;background:var(--surface2);border-radius:8px;max-height:300px;overflow-y:auto;}
+.h-demo .step{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;}
+.h-demo .step-time{color:var(--text3);min-width:42px;font-size:10px;}
+.h-demo .step-agent{font-weight:600;min-width:80px;}
+.h-demo .step-arrow{color:var(--text3);}
+.h-demo .step-text{color:var(--text2);flex:1;}
+.h-demo .step.done .step-text{color:var(--success);}
+.h-demo .step.active .step-agent{color:var(--accent);}
+.animate-flow{display:flex;align-items:center;gap:8px;padding:12px;background:var(--surface2);border-radius:8px;margin-top:16px;overflow:hidden;}
+.animate-node{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;}
+.animate-node.master{background:rgba(0,200,150,0.2);color:var(--accent);}
+.animate-node.trading{background:rgba(0,200,150,0.15);color:#00c896;}
+.animate-node.capital{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.animate-node.risk{background:rgba(239,68,68,0.15);color:var(--danger);}
+.animate-node.done{opacity:0.5;}
+@keyframes flowAnim{0%{transform:translateX(-20px);opacity:0;}20%{opacity:1;transform:translateX(0);}80%{opacity:1;}100%{opacity:0;transform:translateX(20px);}}
+.flow-anim{animation:flowAnim 3s ease-in-out infinite;display:inline-block;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">🏢 云上泰和 <span class="sub">AI OS</span></div>
+  <a href="index.html">公司首页</a>
+  <a href="trading.html">期货点价作战室</a>
+  <a href="agents.html">Agent矩阵</a>
+  <a href="flow.html" class="active">协作流程</a>
+  <div class="spacer"></div>
+  <div class="live-indicator"><div class="live-dot"></div><span>实时数据</span></div>
+  <span class="time" id="clock">-</span>
+</nav>
+
+<div class="container">
+
+  <div style="margin-bottom:28px;">
+    <h1 style="font-size:26px;font-weight:900;margin-bottom:4px;">协作流程可视化</h1>
+    <p style="color:var(--text2);font-size:13px;">期货点价决策场景 · 4个专业Agent串联协作 · 协调Agent统一调度</p>
+  </div>
+
+  <!-- Architecture Overview -->
+  <div class="panel mb-16">
+    <div class="panel-header">
+      <div class="panel-title">云上泰和 AI OS 架构</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="background:rgba(0,200,150,0.08);border:2px solid var(--accent);border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:4px;">🎯 协调Agent（总控层）</div>
+        <div style="font-size:11px;color:var(--text2);">任务分发 · 结果汇总 · 决策输出</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">📈</div>
+          <div style="font-size:13px;font-weight:700;">期限结合Agent</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">点价策略 · 升贴水</div>
+        </div>
+        <div style="flex:1;min-width:180px;background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">💳</div>
+          <div style="font-size:13px;font-weight:700;">资金面Agent</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">成本核算 · 保证金</div>
+        </div>
+        <div style="flex:1;min-width:180px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🛡️</div>
+          <div style="font-size:13px;font-weight:700;">风险Agent</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">VaR · 对冲建议</div>
+        </div>
+        <div style="flex:1;min-width:180px;background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🔬</div>
+          <div style="font-size:13px;font-weight:700;">研究Agent</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">行情分析 · 策略研发</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animated Flow -->
+  <div class="panel mb-16">
+    <div class="panel-header">
+      <div class="panel-title">Agent消息流转动画</div>
+      <span class="panel-badge success">实时</span>
+    </div>
+    <div class="animate-flow" id="animFlow">
+      <span class="animate-node master" style="animation:flowAnim 4s ease-in-out infinite;">🎯 协调Agent</span>
+      <span style="color:var(--text3);">→</span>
+      <span class="animate-node trading" style="animation-delay:0.5s;">📈 期限结合</span>
+      <span style="color:var(--text3);">→</span>
+      <span class="animate-node capital" style="animation-delay:1s;">💳 资金面</span>
+      <span style="color:var(--text3);">→</span>
+      <span class="animate-node risk" style="animation-delay:1.5s;">🛡️ 风险Agent</span>
+      <span style="color:var(--text3);">→</span>
+      <span class="animate-node master" style="animation-delay:2s;background:rgba(16,185,129,0.2);color:var(--success);">✅ 汇总决策</span>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:11px;color:var(--text2);">Step 1</div>
+        <div style="font-size:12px;font-weight:600;color:var(--accent);">协调Agent → 期限结合Agent</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">分发点价分析任务，附当前行情</div>
+      </div>
+      <div style="flex:1;min-width:200px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:11px;color:var(--text2);">Step 2</div>
+        <div style="font-size:12px;font-weight:600;color:#00c896;">并行：期限×资金×风险</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">三个Agent并行分析，30秒内完成</div>
+      </div>
+      <div style="flex:1;min-width:200px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:11px;color:var(--text2);">Step 3</div>
+        <div style="font-size:12px;font-weight:600;color:var(--accent);">协调Agent → 各部门</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">汇总结果，输出最终决策建议</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step Timeline -->
+  <div class="panel mb-16">
+    <div class="panel-header">
+      <div class="panel-title">执行时间线</div>
+      <span class="panel-badge warn">实时进度</span>
+    </div>
+    <div class="timeline" id="timeline">
+      <div class="timeline-item done">
+        <div class="time">T+0s</div>
+        <div class="title">🎯 协调Agent接收任务</div>
+        <div class="desc">接收期货点价建议请求，解析场景参数，分发子任务</div>
+      </div>
+      <div class="timeline-item active">
+        <div class="time">T+0.5s</div>
+        <div class="title">📈 期限结合Agent分析价格结构</div>
+        <div class="desc">分析WTI/布伦特价差，计算推荐点价区间[77.8,79.0]</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+1.2s</div>
+        <div class="title">💳 资金面Agent核算成本</div>
+        <div class="desc">计算点价成本2.3%年化，保证金需求¥3,200万</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+2.0s</div>
+        <div class="title">🛡️ 风险Agent评估VaR</div>
+        <div class="desc">计算日VaR¥2,340万，生成对冲建议：做空WTI 5万吨+布伦特 3万吨</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+3.5s</div>
+        <div class="title">📈 期限结合Agent输出点价区间</div>
+        <div class="desc">推荐区间[77.5,79.0]，支撑$77.5，阻力$80.0，止损$76.5</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+4.2s</div>
+        <div class="title">💳 资金面Agent完成成本核算</div>
+        <div class="desc">美元敞口$2,400万，汇率7.248，保证金充足</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+4.9s</div>
+        <div class="title">🛡️ 风险Agent完成对冲建议</div>
+        <div class="desc">对冲比率16%，VaR降低15%，月对冲成本¥58万</div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">T+5.6s</div>
+        <div class="title">🎯 协调Agent汇总决策输出</div>
+        <div class="desc">综合四Agent结果，输出：买入区间$77.5-78.5，目标$80.0，止损$76.5</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Flow Detail -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">消息流转详情</div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:var(--text2);">📨 发送的消息</div>
+        <div class="h-demo">
+          <div class="step done">
+            <span class="step-time">09:15:01</span>
+            <span class="step-agent" style="color:var(--accent);">协调Agent</span>
+            <span class="step-arrow">→</span>
+            <span class="step-text">@期限结合 @资金面 @风险 请分析WTI 78.4点价建议</span>
+          </div>
+          <div class="step done">
+            <span class="step-time">09:15:02</span>
+            <span class="step-agent" style="color:#00c896;">期限结合</span>
+            <span class="step-arrow">→</span>
+            <span class="step-text">推荐区间[77.8,79.0]，支撑77.5，止损76.5</span>
+          </div>
+          <div class="step">
+            <span class="step-time">09:15:03</span>
+            <span class="step-agent" style="color:#f59e0b;">资金面</span>
+            <span class="step-arrow">→</span>
+            <span class="step-text">成本2.3%年化，保证金¥3,200万，汇率7.248</span>
+          </div>
+          <div class="step">
+            <span class="step-time">09:15:04</span>
+            <span class="step-agent" style="color:var(--danger);">风险Agent</span>
+            <span class="step-arrow">→</span>
+            <span class="step-text">VaR¥2,340万，建议对冲8万吨（WTI5+ Brent3）</span>
+          </div>
+          <div class="step">
+            <span class="step-time">09:15:05</span>
+            <span class="step-agent" style="color:var(--accent);">协调Agent</span>
+            <span class="step-arrow">→</span>
+            <span class="step-text">综合输出：买入$77.5-78.5，目标$80.0，止损$76.5</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:var(--text2);">🔄 并行协作说明</div>
+        <div style="background:var(--surface2);border-radius:8px;padding:16px;font-size:12px;line-height:2;color:var(--text2);">
+          <div style="margin-bottom:8px;"><span style="color:var(--accent);font-weight:700;">并行阶段：</span>T+1.2s ~ T+3.0s</div>
+          <div style="margin-bottom:8px;">期限结合Agent、资金面Agent、风险Agent三个Agent<span style="color:var(--warn);font-weight:700;">同时并行执行</span>，互不等待，大幅提升分析效率。</div>
+          <div style="margin-bottom:8px;">协调Agent作为<span style="color:var(--accent);font-weight:700;">消息路由中枢</span>，负责将任务分发并接收各Agent回报。</div>
+          <div style="padding:8px;background:var(--surface);border-radius:6px;margin-top:12px;">
+            <div style="color:var(--success);font-weight:700;margin-bottom:4px;">✓ 效率提升</div>
+            <div>串行需要 ~15秒，并行仅需 ~5秒完成全部分析</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text2);">📊 性能指标</div>
+          <div class="kpi-card" style="padding:12px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text2);">分析耗时</span>
+              <span style="font-weight:800;color:var(--accent);">5.6秒</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:56%;"></div></div>
+          </div>
+          <div class="kpi-card" style="padding:12px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text2);">Agent并行度</span>
+              <span style="font-weight:800;color:var(--success);">3/3</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--success);"></div></div>
+          </div>
+          <div class="kpi-card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text2);">决策置信度</span>
+              <span style="font-weight:800;color:var(--accent3);">92%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:92%;background:var(--accent3);"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function tick(){
+    var now=new Date();
+    document.getElementById("clock").textContent=now.toLocaleString("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  }
+  setInterval(tick,1000); tick();
+
+  // Animate timeline
+  var items=document.querySelectorAll(".timeline-item");
+  var idx=0;
+  function animateTimeline(){
+    items.forEach(function(it,i){
+      it.classList.remove("done","active");
+      if(i<idx) it.classList.add("done");
+      if(i===idx) it.classList.add("active");
+    });
+    idx++;
+    if(idx>=items.length) idx=0;
+  }
+  animateTimeline();
+  setInterval(animateTimeline,2000);
+})();
+</script>
+</body>
+</html>
