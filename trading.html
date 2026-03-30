@@ -335,14 +335,6 @@ function stopAnalysis(){
   if(!analyzing) return;
   analyzing=false;
   clearTimeout(stepTimer);
-  document.getElementById('analysisStatus').textContent='已停止';
-  document.getElementById('btnAnalyze').disabled=false;
-  document.getElementById('
-
-function stopAnalysis(){
-  if(!analyzing) return;
-  analyzing=false;
-  clearTimeout(stepTimer);
   document.getElementById("analysisStatus").textContent="已停止";
   document.getElementById("btnAnalyze").disabled=false;
   document.getElementById("btnStop").disabled=true;
